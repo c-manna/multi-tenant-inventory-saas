@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [slug, setSlug] = useState("alpha");
   const [email, setEmail] = useState("owner@alpha.com");
   const [password, setPassword] = useState("Password@123");
@@ -12,12 +15,16 @@ export default function Login() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
+
     try {
       const res = await api<any>("/auth/login", {
         method: "POST",
         body: JSON.stringify({ slug, email, password })
       });
+
       login(res);
+      navigate("/"); // ✅ redirect after login
+
     } catch (e: any) {
       setErr(e.message);
     }
