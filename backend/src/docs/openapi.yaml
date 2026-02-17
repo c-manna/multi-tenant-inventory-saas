@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: Multi-Tenant Inventory SaaS API
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      summary: Login by tenant slug + email + password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slug, email, password]
+              properties:
+                slug: { type: string }
+                email: { type: string }
+                password: { type: string }
+      responses:
+        "200": { description: OK }
+  /products:
+    get:
+      summary: List products (tenant scoped)
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer }
+      responses:
+        "200": { description: OK }
+    post:
+      summary: Create product (OWNER/MANAGER)
+      responses:
+        "201": { description: Created }
+  /suppliers:
+    get:
+      summary: List suppliers
+      responses:
+        "200": { description: OK }
+    post:
+      summary: Create supplier (OWNER/MANAGER)
+      responses:
+        "201": { description: Created }
+  /purchase-orders:
+    get:
+      summary: List purchase orders
+      responses:
+        "200": { description: OK }
+    post:
+      summary: Create purchase order (OWNER/MANAGER)
+      responses:
+        "201": { description: Created }
+  /purchase-orders/{id}/status:
+    patch:
+      summary: Update PO status (workflow)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+  /purchase-orders/{id}/receive:
+    post:
+      summary: Receive PO items (partial receipts), updates stock
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+  /orders:
+    get:
+      summary: List sales orders
+      responses:
+        "200": { description: OK }
+    post:
+      summary: Create order (reserves stock atomically)
+      responses:
+        "201": { description: Created }
+        "409": { description: Insufficient stock }
+  /orders/{id}/fulfill:
+    post:
+      summary: Fulfill order lines (partial supported)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+  /orders/{id}/cancel:
+    post:
+      summary: Cancel order (releases reserved stock)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+  /dashboard:
+    get:
+      summary: Dashboard analytics (inventory value, smart low stock, top sellers, movement)
+      responses:
+        "200": { description: OK }
